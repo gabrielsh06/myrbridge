@@ -4,11 +4,6 @@ mod config;
 use std::env;
 
 fn main() {
-    let cfg = config::load_config().unwrap_or_else(|| {
-        eprintln!("Error: Config file not found or invalid. Set it using --config <host> <model>");
-        std::process::exit(1);
-    });
-
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
@@ -20,10 +15,11 @@ fn main() {
         "--host" => {
             if args.len() < 3 {
                 println!("Error: Missing host value.");
+                return;
             }
 
             config::save_host(&args[2]);
-            println!("Host update to: {}", args[2]);
+            println!("Host updated to: {}", args[2]);
         }
         "--model" => {
             if args.len() < 3 {
@@ -45,6 +41,13 @@ fn main() {
             println!("Config updated: host='{}', model='{}'", args[2], args[3]);
         }
         _ => {
+            let cfg = config::load_config().unwrap_or_else(|| {
+                eprintln!(
+                    "Error: Config file not found or invalid. Set it using --config <host> <model>"
+                );
+                std::process::exit(1);
+            });
+
             let prompt = args[1..].join(" ");
 
             api::send_prompt(&cfg.host, &cfg.model, &prompt);
