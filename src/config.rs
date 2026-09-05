@@ -6,6 +6,7 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub host: String,
+    pub model: String,
 }
 
 fn get_config_path() -> PathBuf {
@@ -27,15 +28,40 @@ pub fn load_config() -> Option<Config> {
     }
 }
 
-pub fn save_config(host: &str) {
-    let path = get_config_path();
-
+pub fn save_config(host: &str, model: &str) {
     let config = Config {
         host: host.to_string(),
+        model: model.to_string(),
     };
 
-    if let Ok(content) = toml::to_string_pretty(&config) {
+    write_config(&config);
+}
+
+fn write_config(config: &Config) {
+    let path = get_config_path();
+
+    if let Ok(content) = toml::to_string_pretty(config) {
         fs::write(&path, content).unwrap();
         println!("Saved config to: {:?}", path);
     }
+}
+
+pub fn save_host(new_host: &str) {
+    let mut config = load_config().unwrap_or(Config {
+        host: String::new(),
+        model: String::new(),
+    });
+
+    config.host = new_host.to_string();
+    write_config(&config);
+}
+
+pub fn save_model(new_model: &str) {
+    let mut config = load_config().unwrap_or(Config {
+        host: String::new(),
+        model: String::new(),
+    });
+
+    config.model = new_model.to_string();
+    write_config(&config);
 }
